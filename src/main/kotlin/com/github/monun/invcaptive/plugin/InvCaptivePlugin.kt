@@ -1,4 +1,4 @@
-package com.github.noonmaru.invcaptive.plugin
+package com.github.monun.invcaptive.plugin
 
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor

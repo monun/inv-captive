@@ -3,28 +3,31 @@ import java.io.OutputStream
 plugins {
     kotlin("jvm") version "1.4.21"
     id("com.github.johnrengelman.shadow") version "5.2.0"
-    `maven-publish`
+//    `maven-publish`
 }
 
 val relocate = (findProperty("relocate") as? String)?.toBoolean() ?: true
-
-println("relocate = $relocate")
 
 repositories {
     mavenLocal()
     mavenCentral()
     maven(url = "https://papermc.io/repo/repository/maven-public/")
-    maven(url = "https://jitpack.io")
+    maven(url = "https://jitpack.io/")
 }
 
 dependencies {
     compileOnly(kotlin("stdlib"))
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1")
-    compileOnly("com.destroystokyo.paper:paper-api:1.16.4-R0.1-SNAPSHOT")
-    compileOnly("org.spigotmc:spigot:1.16.4-R0.1-SNAPSHOT")
+    compileOnly("com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot:1.16.5-R0.1-SNAPSHOT")
 
-    implementation("com.github.noonmaru:tap:3.2.7")
-    implementation("com.github.noonmaru:kommand:0.6.4")
+    implementation("com.github.monun:tap:3.3.2")
+    implementation("com.github.monun:kommand:0.7.0")
+
+//    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
+//    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+//    testImplementation("org.mockito:mockito-core:3.6.28")
+//    testImplementation("org.spigotmc:spigot:1.16.5-R0.1-SNAPSHOT")
 }
 
 tasks {
@@ -36,9 +39,15 @@ tasks {
             expand(project.properties)
         }
     }
+    test {
+        useJUnitPlatform()
+        doLast {
+            file("logs").deleteRecursively()
+        }
+    }
     create<Jar>("sourcesJar") {
-        archiveClassifier.set("sources")
         from(sourceSets["main"].allSource)
+        archiveClassifier.set("sources")
     }
     shadowJar {
         archiveBaseName.set(project.property("pluginName").toString())
@@ -46,13 +55,20 @@ tasks {
         archiveClassifier.set("") // Remove 'all'
 
         if (relocate) {
-            relocate("com.github.noonmaru.kommand", "${rootProject.group}.${rootProject.name}.kommand")
-            relocate("com.github.noonmaru.tap", "${rootProject.group}.${rootProject.name}.tap")
+            relocate("com.github.monun.kommand", "${rootProject.group}.${rootProject.name}.kommand")
+            relocate("com.github.monun.tap", "${rootProject.group}.${rootProject.name}.tap")
         }
+
+        doFirst {
+            println("relocate = $relocate")
+        }
+    }
+    build {
+        dependsOn(shadowJar)
     }
     create<Copy>("paper") {
         from(shadowJar)
-        var dest = file(".paper/plugins")
+        var dest = File(rootDir, ".paper/plugins")
         // if plugin.jar exists in plugins change dest to plugins/update
         if (File(dest, shadowJar.get().archiveFileName.get()).exists()) dest = File(dest, "update")
         into(dest)
@@ -60,7 +76,7 @@ tasks {
     create<DefaultTask>("setupWorkspace") {
         doLast {
             val versions = arrayOf(
-                "1.16.4"
+                "1.16.5"
             )
             val buildtoolsDir = file(".buildtools")
             val buildtools = File(buildtoolsDir, "BuildTools.jar")
@@ -97,3 +113,13 @@ tasks {
         }
     }
 }
+
+//publishing {
+//    publications {
+//        create<MavenPublication>(project.property("pluginName").toString()) {
+//            artifactId = project.name
+//            from(components["java"])
+//            artifact(tasks["sourcesJar"])
+//        }
+//    }
+//}

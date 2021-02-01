@@ -1,4 +1,4 @@
-package com.github.noonmaru.invcaptive.plugin
+package com.github.monun.invcaptive.plugin
 
 import com.google.common.collect.ImmutableList
 import net.minecraft.server.v1_16_R3.*
@@ -24,10 +24,10 @@ object InvCaptive {
     init {
         val inv = PlayerInventory(null)
 
-        this.items = inv.items
-        this.armor = inv.armor
-        this.extraSlots = inv.extraSlots
-        this.contents = ImmutableList.of(items, armor, extraSlots)
+        items = inv.items
+        armor = inv.armor
+        extraSlots = inv.extraSlots
+        contents = ImmutableList.of(items, armor, extraSlots)
     }
 
     private const val ITEMS = "items"
@@ -95,7 +95,7 @@ object InvCaptive {
     }
 
     private val releaseSlotItem = CraftItemStack.asNMSCopy(org.bukkit.inventory.ItemStack(Material.GOLDEN_APPLE).apply {
-        itemMeta = itemMeta.apply {
+        itemMeta = itemMeta!!.apply {
             setDisplayName("${ChatColor.GOLD}새로운 인벤토리")
         }
     })
